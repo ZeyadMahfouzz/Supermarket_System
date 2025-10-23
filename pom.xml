@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  This is the Maven Project Object Model (POM) file.
+  It defines project structure, dependencies, plugins, and build settings
+  for your Java/Spring Boot project.
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- The model version for POM. Always 4.0.0 for Maven 2+ -->
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Parent project: tells Maven to use Spring Boot’s predefined configuration -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>   <!-- Parent group (Spring Boot organization) -->
+        <artifactId>spring-boot-starter-parent</artifactId> <!-- Pre-configured base POM -->
+        <version>3.5.6</version>                      <!-- Spring Boot version -->
+        <relativePath/> <!-- Empty = fetch parent from Maven repository instead of local file -->
+    </parent>
+
+    <!-- Coordinates of THIS project -->
+    <groupId>com.supermarket</groupId>  <!-- Company or organization identifier -->
+    <artifactId>Supermarket_System</artifactId> <!-- Unique name for the application/module -->
+    <version>0.0.1-SNAPSHOT</version> <!-- Project version; SNAPSHOT = still under development -->
+
+    <!-- Metadata for project info (optional but useful) -->
+    <name>Supermarket_System</name>         <!-- Project display name -->
+    <description>Supermarket_System</description> <!-- Short description -->
+    <url/> <!-- Could link to GitHub repo, docs, or homepage -->
+
+    <!-- License and developer information (can be filled for open source release) -->
+    <licenses>
+        <license/> <!-- Empty for now -->
+    </licenses>
+    <developers>
+        <developer/> <!-- Placeholder for developer info -->
+    </developers>
+
+    <!-- SCM = Source Control Management (e.g., GitHub, GitLab) -->
+    <scm>
+        <connection/>          <!-- Read-only connection (e.g., Git URL) -->
+        <developerConnection/> <!-- Dev write-access connection -->
+        <tag/>                 <!-- SCM tag/version (e.g., main, v1.0.0) -->
+        <url/>                 <!-- Project repository URL -->
+    </scm>
+
+    <!-- Properties: global settings you can reuse -->
+    <properties>
+        <java.version>17</java.version> <!-- Sets Java version for the compiler -->
+    </properties>
+
+    <!-- Dependencies: libraries your project needs -->
+    <dependencies>
+
+        <!-- JPA = Java Persistence API for database access via Spring Data -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Web = includes Spring MVC, REST, Jackson for JSON, Tomcat (default) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- DevTools = hot reload, auto restart during development -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>  <!-- Only needed while running, not for compilation -->
+            <optional>true</optional> <!-- Won’t be included in final packaged app -->
+        </dependency>
+
+        <!-- MySQL JDBC driver (connect Spring Boot to MySQL DB) -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope> <!-- Needed at runtime to connect to DB -->
+        </dependency>
+
+        <!-- Spring Boot testing framework (JUnit, Mockito, AssertJ, etc.) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope> <!-- Only available when running tests -->
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>0.11.5</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>0.11.5</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- Build configuration -->
+    <build>
+        <plugins>
+            <!-- Plugin to build Spring Boot executable JARs -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <!-- No extra configuration here, but can add customizations like layers, docker, etc. -->
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
