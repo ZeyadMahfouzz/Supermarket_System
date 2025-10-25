@@ -71,7 +71,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (jwtUtil.validateToken(token)) {
 
             // 5️⃣ Extract user info from token
-            String username = jwtUtil.getUsername(token);
+            String email = jwtUtil.getEmail(token);
             String role = jwtUtil.getRole(token); // e.g., "ADMIN" or "USER"
 
             // 6️⃣ Convert role string into Spring’s "GrantedAuthority" format
@@ -83,7 +83,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // "User" is a built-in Spring Security model implementing UserDetails
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
-                            new User(username, "", authorities), // principal (user info)
+                            new User(email, "", authorities), // principal (user info)
                             null,                                // credentials (none for JWT)
                             authorities                          // granted authorities (roles)
                     );

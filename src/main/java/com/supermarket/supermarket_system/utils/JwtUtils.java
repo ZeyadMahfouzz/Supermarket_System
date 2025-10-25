@@ -104,7 +104,7 @@ public class JwtUtils {
      * @param token The JWT token string to extract data from.
      * @return The username stored in the token's "sub" (subject) claim.
      */
-    public String getUsername(String token) {
+    public String getEmail(String token) {
         return parseToken(token).getBody().getSubject(); // "sub" → standard JWT subject
     }
 
