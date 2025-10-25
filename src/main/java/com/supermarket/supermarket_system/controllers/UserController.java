@@ -23,7 +23,7 @@ public class UserController {
     public Map<String, String> loginUser(@RequestBody User user) {
         String token = userService.loginUser(user.getEmail(), user.getPassword());
         if (token == null) {
-            return Map.of("message", "Invalid username or password.");
+            return Map.of("message", "Invalid email or password.");
         }
         return Map.of(
                 "message", "Login successful!",

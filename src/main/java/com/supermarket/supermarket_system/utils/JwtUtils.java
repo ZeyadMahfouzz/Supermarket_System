@@ -39,7 +39,7 @@ public class JwtUtils {
     // Secret key for signing JWTs
     // In production: load from application.properties or environment variables.
     // Must be at least 32 bytes for HS256.
-    private static final String SECRET_KEY = "ZeyadAmmarMariamNayerManar12345";
+    private static final String SECRET_KEY = "ZeyadAmmarMariamNayerManar2022-2026SupermarketSystemProject";
 
     // Token expiration time: 1 hour (in milliseconds)
     private static final long EXPIRATION_TIME = 1000 * 60 * 60;

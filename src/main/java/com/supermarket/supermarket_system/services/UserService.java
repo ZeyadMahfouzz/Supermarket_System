@@ -27,19 +27,19 @@ public class UserService {
         }
 
         String hashedPassword = passwordEncoder.encode(password);
-        User newUser = new User(name, email, password, phone, address, role);
+        User newUser = new User(name, email, hashedPassword, phone, address, role);
         return userRepository.save(newUser);
     }
 
     public String loginUser(String email, String password) {
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("Invalid username or password");
+            throw new RuntimeException("Invalid email or password");
         }
 
         User user = userOpt.get();
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new RuntimeException("Invalid email or password");
         }
 
         // Generate JWT Token
