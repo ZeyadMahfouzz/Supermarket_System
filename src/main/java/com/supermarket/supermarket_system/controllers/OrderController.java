@@ -29,37 +29,39 @@ public class OrderController {
 
     @Autowired
     private OrderRepository orderRepository;
-//
-//    // ========================
-//    // READ: GET all orders
-//    // ========================
-//    // Maps GET /orders
-//    // Returns a list of all Order objects from the DB.
-//    @GetMapping
-//    public List<Order> getAllOrders() {
-//        return orderRepository.findAll();
-//    }
-//
-//    // ========================
-//    // READ: GET a single order by ID
-//    // ========================
-//    // Maps GET /orders/{id}
-//    // @PathVariable → Extracts {id} from the URL
-//    // findById(id).orElse(null) → If not found, return null (later we can handle better errors).
-//    @GetMapping("/{id}")
-//    public Order getOrderById(@PathVariable Long id) {
-//        return orderRepository.findById(id).orElse(null);
-//    }
-//
-//
-//    // ========================
-//    // READ: GET all orders related to a single user by the user ID
-//    // ========================
-//    // Maps GET /orders/{user}/{id}
-//    // @PathVariable → Extracts {id} from the URL
-//    // findById(id).orElse(null) → If not found, return null (later we can handle better errors).
-//    @GetMapping("/{user}/{id}")
-//    public List<Order> getOrderByUser(@PathVariable long user) {
+
+    // ========================
+    // READ: GET all orders
+    // ========================
+    // Maps GET /orders
+    // Returns a list of all Order objects from the DB.
+    @GetMapping
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+//        return orderRepository.findAll(); // Uses JpaRepository built-in method
+    }
+
+    // ========================
+    // READ: GET a single order by ID
+    // ========================
+    // Maps GET /orders/{id}
+    // @PathVariable → Extracts {id} from the URL
+    // findById(id).orElse(null) → If not found, return null (later we can handle better errors).
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable Long id) {
+        return orderRepository.findById(id).orElse(null);
+    }
+
+
+    // ========================
+    // READ: GET all orders related to a single user by the user ID
+    // ========================
+    // Maps GET /orders/{user}/{id}
+    // @PathVariable → Extracts {id} from the URL
+    // findById(id).orElse(null) → If not found, return null (later we can handle better errors).
+    @GetMapping("/{user}/{id}")
+    public List<Order> getOrderByUser(@PathVariable long user) {
+        return orderRepository.findByUser(user);
 //        return orderRepository.findByUser(user);
-//    }
+    }
 }
