@@ -45,7 +45,7 @@ public class Item {
 
     // Category
     public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = this.category; }
+    public void setCategory(String category) { this.category = category; }
 
     // Description
     public String getDescription() { return description; }

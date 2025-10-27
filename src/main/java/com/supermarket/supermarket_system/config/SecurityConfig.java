@@ -11,6 +11,7 @@ package com.supermarket.supermarket_system.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -62,6 +63,7 @@ public class SecurityConfig {
                 // Since JWTs are sent in headers, not stored in cookies, CSRF attacks are not possible here.
                 .csrf(csrf -> csrf.disable())
 
+
                 // ----------------------
                 // 2. Disable HTTP Sessions (STATELESS mode)
                 // ----------------------
@@ -88,7 +90,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
                         .requestMatchers("/users/register", "/users/login", "/health", "/").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/items", "/items/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/items", "/items/**").permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/items", "/items/**").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/items", "/items/**").permitAll()
                         // All other routes are protected
                         .anyRequest().authenticated()
                 )
