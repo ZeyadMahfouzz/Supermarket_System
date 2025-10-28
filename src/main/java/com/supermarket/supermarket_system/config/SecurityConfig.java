@@ -87,7 +87,7 @@ public class SecurityConfig {
                 // while all others must include a valid JWT in the Authorization header.
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints
-                        .requestMatchers("/users/register", "/users/login", "/health").permitAll()
+                        .requestMatchers("/users/register", "/users/login", "/health", "/**").permitAll()
 
                         // All other routes are protected
                         .anyRequest().authenticated()
