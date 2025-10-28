@@ -57,12 +57,23 @@ public class ItemController {
     @PutMapping("/{id}")
     public Item updateItem(@PathVariable Long id, @RequestBody Item updatedItem) {
         return itemRepository.findById(id).map(item -> {
-            item.setName(updatedItem.getName());
-            item.setPrice(updatedItem.getPrice());
-            item.setQuantity(updatedItem.getQuantity());
-            item.setCategory(updatedItem.getCategory());
-            item.setDescription(updatedItem.getDescription());
-            return itemRepository.save(item); // Save updated record
-        }).orElse(null); // If not found, return null
+            if (updatedItem.getName() != null) {
+                item.setName(updatedItem.getName());
+            }
+            if (updatedItem.getPrice() != null) {
+                item.setPrice(updatedItem.getPrice());
+            }
+            if (updatedItem.getQuantity() != 0) {
+                item.setQuantity(updatedItem.getQuantity());
+            }
+            if (updatedItem.getCategory() != null) {
+                item.setCategory(updatedItem.getCategory());
+            }
+            if (updatedItem.getDescription() != null) {
+                item.setDescription(updatedItem.getDescription());
+            }
+            return itemRepository.save(item);
+        }).orElse(null);// If not found, return null
     }
 }
+
