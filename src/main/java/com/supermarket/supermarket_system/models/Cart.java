@@ -20,11 +20,15 @@ public class Cart {
     @Column(columnDefinition = "TEXT")
     private Map<Long, Integer> items = new HashMap<>(); // itemId -> quantity
 
+    @Column
+    private double totalPrice = 0.0;
+
     public Cart() {}
 
     public Cart(User user) {
         this.user = user;
         this.items = new HashMap<>();
+        this.totalPrice = 0.0;
     }
 
     // Getters & Setters
@@ -47,15 +51,12 @@ public class Cart {
     }
 
     // Calculated total - requires ItemRepository to fetch prices
-    public Double getTotal(Map<Long, Double> itemPrices) {
-        return items.entrySet().stream()
-                .mapToDouble(entry -> {
-                    Long itemId = entry.getKey();
-                    Integer quantity = entry.getValue();
-                    Double price = itemPrices.getOrDefault(itemId, 0.0);
-                    return price * quantity;
-                })
-                .sum();
+    public double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(double totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
     // Helper methods
@@ -63,19 +64,17 @@ public class Cart {
         items.put(itemId, items.getOrDefault(itemId, 0) + quantity);
     }
 
+    public void updateItemQuantity(Long itemId, int quantity) {
+        if (quantity <= 0) items.remove(itemId);
+        else items.put(itemId, quantity);
+    }
+
     public void removeItem(Long itemId) {
         items.remove(itemId);
     }
 
-    public void updateItemQuantity(Long itemId, int quantity) {
-        if (quantity <= 0) {
-            items.remove(itemId);
-        } else {
-            items.put(itemId, quantity);
-        }
-    }
-
     public void clearCart() {
         items.clear();
+        totalPrice = 0.0;
     }
 }
