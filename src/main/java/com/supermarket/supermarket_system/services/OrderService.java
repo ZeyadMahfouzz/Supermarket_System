@@ -53,6 +53,7 @@ public class OrderService {
 
         // Clear cart after order
         cart.setItems(new HashMap<>());
+        cart.setTotalPrice(0);
         cartRepository.save(cart);
 
         return order;

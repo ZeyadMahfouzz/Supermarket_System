@@ -10,21 +10,22 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/orders")
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
 
     // Create order from user's cart
-    @PostMapping("/checkout")
+    @PostMapping("/{userId}/checkout")
     public ResponseEntity<Order> createOrder(
-            @RequestParam Long userId,
-            @RequestBody(required = false) Map<String, String> request) {
-        String paymentMethod = request != null ? request.get("paymentMethod") : null;
+            @PathVariable Long userId,
+            @RequestBody Map<String, String> request) {
+        String paymentMethod = request.get("paymentMethod");
         Order order = orderService.createOrderFromCart(userId, paymentMethod);
         return ResponseEntity.ok(order);
     }
+
 
     // Get specific order by ID
     @GetMapping("/{orderId}/details")
