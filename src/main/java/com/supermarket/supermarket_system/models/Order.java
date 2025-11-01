@@ -21,6 +21,9 @@ public class Order {
     @Column(columnDefinition = "TEXT")
     private Map<Long, Integer> items = new HashMap<>(); // itemId -> quantity
 
+    @Transient // Not persisted to database, used only for API responses
+    private Map<String, Object> itemDetails = new HashMap<>(); // itemName -> {quantity, price, subtotal}
+
     @Column(nullable = false)
     private LocalDateTime orderDate;
 
@@ -82,6 +85,13 @@ public class Order {
     }
     public void setPaymentmethod(String paymentmethod) {
         this.paymentmethod = paymentmethod;
+    }
+
+    public Map<String, Object> getItemDetails() {
+        return itemDetails;
+    }
+    public void setItemDetails(Map<String, Object> itemDetails) {
+        this.itemDetails = itemDetails;
     }
 
     // Calculated total - requires ItemRepository to fetch prices

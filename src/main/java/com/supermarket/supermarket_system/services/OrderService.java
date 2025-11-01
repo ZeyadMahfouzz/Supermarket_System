@@ -1,6 +1,7 @@
 package com.supermarket.supermarket_system.services;
 
 import com.supermarket.supermarket_system.models.Cart;
+import com.supermarket.supermarket_system.models.Item;
 import com.supermarket.supermarket_system.models.Order;
 import com.supermarket.supermarket_system.models.User;
 import com.supermarket.supermarket_system.repositories.CartRepository;
@@ -44,6 +45,24 @@ public class OrderService {
 
         Map<Long, Integer> orderItems = new HashMap<>(cart.getItems());
 
+        // Check stock availability and decrease quantities
+        for (Map.Entry<Long, Integer> entry : orderItems.entrySet()) {
+            Long itemId = entry.getKey();
+            Integer quantityOrdered = entry.getValue();
+
+            Item item = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new RuntimeException("Item not found with id: " + itemId));
+
+            if (item.getQuantity() < quantityOrdered) {
+                throw new RuntimeException("Insufficient stock for item: " + item.getName() +
+                        ". Available: " + item.getQuantity() + ", Requested: " + quantityOrdered);
+            }
+
+            // Decrease item quantity
+            item.setQuantity(item.getQuantity() - quantityOrdered);
+            itemRepository.save(item);
+        }
+
         Order order = new Order(user, orderItems);
         if (paymentMethod != null && !paymentMethod.isEmpty()) {
             order.setPaymentmethod(paymentMethod);
@@ -60,24 +79,56 @@ public class OrderService {
 
 
     public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found with id: " + orderId));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("No order found with this id: " + orderId));
+        enrichOrderWithItemDetails(order);
+        return order;
     }
 
     public List<Order> getUserOrders(Long userId) {
-        return orderRepository.findByUserIdOrderByOrderDateDesc(userId);
+        List<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(userId);
+        orders.forEach(this::enrichOrderWithItemDetails);
+        return orders;
     }
 
     public List<Order> getAllOrders() {
-        return orderRepository.findAllByOrderByOrderDateDesc();
+        List<Order> orders = orderRepository.findAllByOrderByOrderDateDesc();
+        orders.forEach(this::enrichOrderWithItemDetails);
+        return orders;
     }
 
     public List<Order> getOrdersByStatus(String status) {
-        return orderRepository.findByStatusOrderByOrderDateDesc(status);
+        List<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc(status);
+        orders.forEach(this::enrichOrderWithItemDetails);
+        return orders;
     }
 
     public List<Order> getUserOrdersByStatus(Long userId, String status) {
-        return orderRepository.findByUserIdAndStatusOrderByOrderDateDesc(userId, status);
+        List<Order> orders = orderRepository.findByUserIdAndStatusOrderByOrderDateDesc(userId, status);
+        orders.forEach(this::enrichOrderWithItemDetails);
+        return orders;
+    }
+
+    private void enrichOrderWithItemDetails(Order order) {
+        Map<String, Object> itemDetails = new HashMap<>();
+        double totalAmount = 0.0;
+
+        for (Map.Entry<Long, Integer> entry : order.getItems().entrySet()) {
+            Long itemId = entry.getKey();
+            Integer quantity = entry.getValue();
+
+            itemRepository.findById(itemId).ifPresent(item -> {
+                Map<String, Object> details = new HashMap<>();
+                details.put("itemId", item.getId());
+                details.put("quantity", quantity);
+                details.put("price", item.getPrice());
+                details.put("subtotal", item.getPrice() * quantity);
+
+                itemDetails.put(item.getName(), details);
+            });
+        }
+
+        order.setItemDetails(itemDetails);
     }
 
     @Transactional
@@ -97,6 +148,20 @@ public class OrderService {
 
         if ("DELIVERED".equals(order.getStatus()) || "CANCELLED".equals(order.getStatus())) {
             throw new RuntimeException("Cannot cancel order with status: " + order.getStatus());
+        }
+
+        // Restore item quantities back to inventory
+        Map<Long, Integer> orderItems = order.getItems();
+        for (Map.Entry<Long, Integer> entry : orderItems.entrySet()) {
+            Long itemId = entry.getKey();
+            Integer quantityOrdered = entry.getValue();
+
+            Item item = itemRepository.findById(itemId)
+                    .orElseThrow(() -> new RuntimeException("Item not found with id: " + itemId));
+
+            // Restore quantity
+            item.setQuantity(item.getQuantity() + quantityOrdered);
+            itemRepository.save(item);
         }
 
         order.setStatus("CANCELLED");
