@@ -27,10 +27,15 @@ public class Order {
     @Column(nullable = false)
     private String status; // e.g., SHIPPING, COMPLETED, CANCELLED, SHIPPED
 
+    @Column(nullable = false)
+    private String paymentmethod; // e.g., CREDIT_CARD, PAYPAL, CASH_ON_DELIVERY
+
     public Order() {
         this.orderDate = LocalDateTime.now();
-        this.status = "SHIPPING";
+        this.status = "PENDING";
+        this.paymentmethod = "UNSPECIFIED";
     }
+
 
     public Order(User user, Map<Long, Integer> items) {
         this.user = user;
@@ -70,6 +75,13 @@ public class Order {
     }
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getPaymentmethod() {
+        return paymentmethod;
+    }
+    public void setPaymentmethod(String paymentmethod) {
+        this.paymentmethod = paymentmethod;
     }
 
     // Calculated total - requires ItemRepository to fetch prices
