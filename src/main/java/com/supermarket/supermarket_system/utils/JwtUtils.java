@@ -61,13 +61,13 @@ public class JwtUtils {
     /**
      * Generates a signed JWT token for a user.
      *
-     * @param username The unique user identifier (will be stored as "sub" in the payload)
+     * @param email The unique user identifier (will be stored as "sub" in the payload)
      * @param role The user’s role (stored as a custom claim)
      * @return A compact JWT string (Header.Payload.Signature)
      */
-    public String generateToken(String username, String role) {
+    public String generateToken(String email, String role) {
         return Jwts.builder()
-                .setSubject(username) // Standard claim: "sub"
+                .setSubject(email) // Standard claim: "sub"
                 .claim("role", role)  // Custom claim: "role"
                 .setIssuedAt(new Date()) // "iat": issued at
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME)) // "exp"
