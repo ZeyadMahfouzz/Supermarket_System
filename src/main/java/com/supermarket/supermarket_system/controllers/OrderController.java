@@ -28,14 +28,14 @@ public class OrderController {
 
 
     // Get specific order by ID
-    @GetMapping("/order/details")
+    @GetMapping("/{orderId}/details")
     public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
         Order order = orderService.getOrderById(orderId);
         return ResponseEntity.ok(order);
     }
 
     // Get user's order history
-    @GetMapping("/user/history")
+    @GetMapping("/user/{userId}/history")
     public ResponseEntity<List<Order>> getUserOrders(@PathVariable Long userId) {
         List<Order> orders = orderService.getUserOrders(userId);
         return ResponseEntity.ok(orders);
@@ -49,14 +49,14 @@ public class OrderController {
     }
 
     // Get orders by status
-    @GetMapping("/status")
+    @GetMapping("/status/{status}")
     public ResponseEntity<List<Order>> getOrdersByStatus(@PathVariable String status) {
         List<Order> orders = orderService.getOrdersByStatus(status);
         return ResponseEntity.ok(orders);
     }
 
     // Get user's orders filtered by status
-    @GetMapping("/user/status")
+    @GetMapping("/user/{userId}/status/{status}")
     public ResponseEntity<List<Order>> getUserOrdersByStatus(
             @PathVariable Long userId,
             @PathVariable String status) {
