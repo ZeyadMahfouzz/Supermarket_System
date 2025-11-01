@@ -20,23 +20,16 @@ public class CartController {
 
     private final CartService service;
 
+    @Autowired
+    private UserRepository userRepository;
+
     public CartController(CartService service) {
         this.service = service;
     }
 
-    /**
-     * Validates that the authenticated user matches the userId in the path
-     * This prevents users from accessing/modifying other users' carts
-     */
-    // Add this to your CartController and OrderController classes
-
-    @Autowired
-    private UserRepository userRepository;
-
     private boolean isAuthorizedUser(Long userId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            System.out.println("DEBUG: No authentication found");
             return false;
         }
 
@@ -44,28 +37,21 @@ public class CartController {
         boolean isAdmin = auth.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         if (isAdmin) {
-            System.out.println("DEBUG: User is admin, access granted");
             return true;
         }
 
         // Get the email from the JWT token
         String tokenEmail = auth.getName();
-        System.out.println("DEBUG: Token email = " + tokenEmail);
 
         // Fetch the user from database using userId from URL
         Optional<User> targetUser = userRepository.findById(userId);
 
         if (targetUser.isEmpty()) {
-            System.out.println("DEBUG: User with ID " + userId + " not found in database");
-            return false; // User doesn't exist
+            return false;
         }
 
-        String dbEmail = targetUser.get().getEmail();
-        System.out.println("DEBUG: Database email = " + dbEmail);
-        System.out.println("DEBUG: Emails match? " + tokenEmail.equals(dbEmail));
-
-        // Compare: does the email from token match the email of the user with this userId?
-        return tokenEmail.equals(dbEmail);
+        // Compare emails
+        return tokenEmail.equals(targetUser.get().getEmail());
     }
 
     // View cart
