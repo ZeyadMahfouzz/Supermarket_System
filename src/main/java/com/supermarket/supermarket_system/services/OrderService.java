@@ -9,12 +9,16 @@ import com.supermarket.supermarket_system.repositories.ItemRepository;
 import com.supermarket.supermarket_system.repositories.OrderRepository;
 import com.supermarket.supermarket_system.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -31,8 +35,53 @@ public class OrderService {
     @Autowired
     private ItemRepository itemRepository;
 
+    /**
+     * Validates that the authenticated user matches the userId or is an admin
+     */
+    private void validateUserAccess(Long userId) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new AccessDeniedException("User not authenticated");
+        }
+
+        // Check if user is admin
+        if (isAdmin(auth)) {
+            return; // Admins can access anything
+        }
+
+        // Get email from JWT token
+        String tokenEmail = auth.getName();
+
+        // Get user from database
+        Optional<User> targetUser = userRepository.findById(userId);
+
+        if (targetUser.isEmpty()) {
+            throw new RuntimeException("User not found");
+        }
+
+        // Compare emails
+        if (!tokenEmail.equals(targetUser.get().getEmail())) {
+            throw new AccessDeniedException("You can only access your own orders");
+        }
+    }
+
+    /**
+     * Check if current user is admin
+     */
+    private boolean isAdmin(Authentication auth) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    }
+
     @Transactional
     public Order createOrderFromCart(Long userId, String paymentMethod) {
+        validateUserAccess(userId);
+
+        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
+            throw new IllegalArgumentException("Payment method is required");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -64,10 +113,7 @@ public class OrderService {
         }
 
         Order order = new Order(user, orderItems);
-        if (paymentMethod != null && !paymentMethod.isEmpty()) {
-            order.setPaymentmethod(paymentMethod);
-        }
-
+        order.setPaymentmethod(paymentMethod);
         order = orderRepository.save(order);
 
         // Clear cart after order
@@ -78,33 +124,42 @@ public class OrderService {
         return order;
     }
 
-
     public Order getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("No order found with this id: " + orderId));
+
+        // Validate user can access this order
+        validateUserAccess(order.getUser().getId());
+
         enrichOrderWithItemDetails(order);
         return order;
     }
 
     public List<Order> getUserOrders(Long userId) {
+        validateUserAccess(userId);
+
         List<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(userId);
         orders.forEach(this::enrichOrderWithItemDetails);
         return orders;
     }
 
     public List<Order> getAllOrders() {
+        // Only admins can access - will be enforced by SecurityConfig
         List<Order> orders = orderRepository.findAllByOrderByOrderDateDesc();
         orders.forEach(this::enrichOrderWithItemDetails);
         return orders;
     }
 
     public List<Order> getOrdersByStatus(String status) {
+        // Only admins can access - will be enforced by SecurityConfig
         List<Order> orders = orderRepository.findByStatusOrderByOrderDateDesc(status);
         orders.forEach(this::enrichOrderWithItemDetails);
         return orders;
     }
 
     public List<Order> getUserOrdersByStatus(Long userId, String status) {
+        validateUserAccess(userId);
+
         List<Order> orders = orderRepository.findByUserIdAndStatusOrderByOrderDateDesc(userId, status);
         orders.forEach(this::enrichOrderWithItemDetails);
         return orders;
@@ -112,7 +167,6 @@ public class OrderService {
 
     private void enrichOrderWithItemDetails(Order order) {
         Map<String, Object> itemDetails = new HashMap<>();
-        double totalAmount = 0.0;
 
         for (Map.Entry<Long, Integer> entry : order.getItems().entrySet()) {
             Long itemId = entry.getKey();
@@ -134,9 +188,16 @@ public class OrderService {
 
     @Transactional
     public Order updateOrderStatus(Long orderId, String status) {
-        Order order = getOrderById(orderId);
+        // Only admins can update status - enforced by SecurityConfig
 
-        // Validate status transitions if needed
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status is required");
+        }
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("No order found with this id: " + orderId));
+
+        // Validate status transitions
         validateStatusTransition(order.getStatus(), status);
 
         order.setStatus(status);
@@ -145,7 +206,11 @@ public class OrderService {
 
     @Transactional
     public void cancelOrder(Long orderId) {
-        Order order = getOrderById(orderId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("No order found with this id: " + orderId));
+
+        // Validate user can cancel this order
+        validateUserAccess(order.getUser().getId());
 
         if ("DELIVERED".equals(order.getStatus()) || "CANCELLED".equals(order.getStatus())) {
             throw new RuntimeException("Cannot cancel order with status: " + order.getStatus());
@@ -170,8 +235,6 @@ public class OrderService {
     }
 
     private void validateStatusTransition(String currentStatus, String newStatus) {
-        // Add your business logic for valid status transitions
-        // For example, can't go from DELIVERED back to SHIPPING
         if ("DELIVERED".equals(currentStatus) && !"DELIVERED".equals(newStatus)) {
             throw new RuntimeException("Cannot change status of delivered order");
         }
@@ -180,4 +243,3 @@ public class OrderService {
         }
     }
 }
-
